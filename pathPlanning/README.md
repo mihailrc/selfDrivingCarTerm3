@@ -87,54 +87,69 @@ A really helpful resource for doing this project and creating smooth trajectorie
     git checkout e94b6e1
     ```
 
-## Editor Settings
+## Solution
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+The solution to this project consists of the following components:
+* Path Planning - receives as input previous path, localization data and position 
+of all other vehicles on the same side of the road and produces a list of next 50 points that
+is fed back to the simulator
+* Waypoints - loads the list of points that describes the highway/track and provides methods to 
+convert between Cartesian and Frenet coordinates. Most of the code in this class was already 
+provided with the started code. My only contribution was the method that converts from Frenet 
+to Cartesian coordinates
+* Vehicle - a simple data holder for vehicle data provided by sensor fusion
+* Traffic - uses the list of vehicles as an input and calculates distance to nearest 
+vehicles and also the speed for each lane. This class is used by the Path Planner to decide
+what lane to use.
+* Main  - acts as a bridge between Simulator and Path Planning
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+## Implementation Details
 
-## Code Style
+### Analyzing Traffic data
+The first step is to analyze the traffic data provided by the simulator. In this analysis we 
+only include vehicles within a search radius (currently set at 50 meters). As part of this analysis
+we calculate the following:
+* distance to nearest vehicle in front of out car for each lane
+* distance to the nearest vehicle behind our car for each lane
+* speed for each lane. Lane speed is given by the slowest vehicle on that lane that is in front of our car.
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+Also note that since the simulator provides us with previous points that were not already processed
+we need to adjust vehicles s values to account for this time offset. For example if we receive 10 previous
+points we predict each vehicle's position after 0.02 * 10 = 200 ms. This is pretty simple actually since 
+we can assume the velocity to be constant within that time interval.
 
-## Project Instructions and Rubric
+```json
+s_final = s_initial + speed * number_of_previous_points * 0.02
+```
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+### Finding the best lane
+The next step is to find the best lane. In order to do that we calculate a cost for each of the lanes 
+and we pick the one with the lowest cost. To calculate the cost we include the following factors:
+* we add a penalty for changing the lane
+* we add a very big penalty for leaving the road
+* we add a very big penalty when trying to change the lane when there are vehicles that are too close on the destination lane. We do this in order to prevent collisions.
+* we also allow changing two lanes but first we check that the lane in the middle does not have vehicles close to us
+* we add a penalty for slow lanes
+* we add a penalty for vehicles in front of us
 
+The code for the cost calculator is in PathPlanner::calculateCost()
 
-## Call for IDE Profiles Pull Requests
+### Calculate Path
+The last step is to actually calculate the path to transition to this lane. The goal is to generate a list of points that we feed back into the simulator.
 
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+The Path Planner keeps track of the following path data (for all state maintained by Path Planner check PathPlanner.h):
+ * vectors of next 50 points for x,y,s and d
+ * list of previous x and y points received from the simulator
+ 
+We first clean from the list of next points all the points that were already processed by the simulator (these are the points NOT in the list of previous points).
+ 
+We then calculate a d spline in order to generate a smooth transition to the target lane. 
+ 
+Next we add new points to the list of existing points until we end up with the desired number of points.
+ 
+The code that performs these calculations is in PathPlanner::recalculate_path()
+    
+ 
+   
+ 
 

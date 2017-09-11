@@ -35,18 +35,16 @@ string hasData(string s) {
 int main() {
     uWS::Hub h;
 
-    // Initialize map
-    Waypoints map = Waypoints("../data/highway_map.csv");
+    // Initialize waypoints
+    Waypoints waypoints = Waypoints("../data/highway_map.csv");
 
     // Initialize path planner
-    PathPlanner planner = PathPlanner(map);
+    PathPlanner planner = PathPlanner(waypoints);
 
-    h.onMessage([&planner, &map](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+    h.onMessage([&planner, &waypoints](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
-        //auto sdata = string(data).substr(0, length);
-        //cout << sdata << endl;
         if (length && length > 2 && data[0] == '4' && data[1] == '2') {
 
             auto s = hasData(data);
@@ -79,19 +77,19 @@ int main() {
 
                     json msgJson;
 
-                    // Construct nice vectors of previous paths
-                    vector<double> pre_path_x;
-                    vector<double> pre_path_y;
+                    // Construct vectors of previous paths
+                    vector<double> v_previous_path_x;
+                    vector<double> v_previous_path_y;
 
                     if(previous_path_x.size() > 0){
                         for(int i=0; i < previous_path_x.size(); i++){
-                            pre_path_x.push_back((double)(previous_path_x[i]));
-                            pre_path_y.push_back((double)(previous_path_y[i]));
+                            v_previous_path_x.push_back((double)(previous_path_x[i]));
+                            v_previous_path_y.push_back((double)(previous_path_y[i]));
                         }
                     }
 
-                    // Construct nice vector of tracked vehicle objects
-                    vector<Vehicle> tracked_vehicles;
+                    // Construct vector of tracked vehicle objects
+                    vector<Vehicle> vehicles;
                     if(sensor_fusion.size() > 0){
                         for(int i=0; i < sensor_fusion.size(); i++){
                             auto vehicle = sensor_fusion[i];
@@ -104,24 +102,22 @@ int main() {
                                                 vehicle[5],   // s
                                                 vehicle[6]);  // d
 
-                            tracked_vehicles.push_back(new_vehicle);
+                            vehicles.push_back(new_vehicle);
                         }
                     }
 
-                    // Update path planner
                     planner.process(car_s, car_d,
                                     car_speed,
-                                    pre_path_x, pre_path_y,
+                                    v_previous_path_x, v_previous_path_y,
                                     end_path_s, end_path_d,
-                                    tracked_vehicles);
+                                    vehicles);
 
-                    // Path made up of (x,y) points that the car will visit sequentially every .02 seconds
+                    // Path is made up of 50 points that the car will visit sequentially every .02 seconds
                     msgJson["next_x"] = planner.next_x_;
                     msgJson["next_y"] = planner.next_y_;
 
                     auto msg = "42[\"control\","+ msgJson.dump()+"]";
 
-                    //this_thread::sleep_for(chrono::milliseconds(1000));
                     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
 
                 }
