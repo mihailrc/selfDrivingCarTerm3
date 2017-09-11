@@ -148,6 +148,10 @@ We then calculate a d spline in order to generate a smooth transition to the tar
 Next we add new points to the list of existing points until we end up with the desired number of points.
  
 The code that performs these calculations is in PathPlanner::recalculate_path()
+
+Below is a video recording of the car driving 5 miles without incident.
+
+[![Path Planning](https://img.youtube.com/vi/t7P4au6bT1Q/0.jpg)](https://youtu.be/t7P4au6bT1Q)
     
  
    
