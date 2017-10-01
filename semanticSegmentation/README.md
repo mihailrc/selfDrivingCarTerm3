@@ -20,7 +20,7 @@ The network was trained with the Adam Optimizer using the following parameters:
 * learning rate: 0.0001
 * dropout: 0.5
 
-The following graph shows that the loss as a function of training time.
+The following graph shows the loss as a function of training time.
 
 ![loss](loss.png)
 
