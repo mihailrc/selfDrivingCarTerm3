@@ -2,3 +2,5 @@ build/
 cmake-build-debug/
 .idea
 *.mov
+data/
+__pycache__/
