@@ -41,7 +41,7 @@ Epoch: 2   Batch: 225   Loss: 0.0666     Time: 1965.0 seconds
 Epoch: 2   Batch: 241   Loss: 0.1040     Time: 2025.0 seconds
 Epoch: 2   Batch: 257   Loss: 0.1108     Time: 2084.9 seconds
 Epoch: 2   Batch: 273   Loss: 0.0755     Time: 2144.7 seconds
-Epoch: 2   Batch: 289   Loss: 0.6180     Time: 2204.6 seconds
+Epoch: 2   Batch: 289   Loss: 0.0618     Time: 2204.6 seconds
 Epoch: 3   Batch: 1     Loss: 0.1573     Time: 2208.4 seconds
 Epoch: 3   Batch: 17    Loss: 0.2573     Time: 2268.2 seconds
 Epoch: 3   Batch: 33    Loss: 0.1182     Time: 2328.1 seconds
